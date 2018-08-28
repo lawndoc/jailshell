@@ -347,19 +347,6 @@ def ls(options=None):
             target = CURRENT_DIR[:CURRENT_DIR.rindex("/")]
         elif o != ".":
             target = o
-    """
-    try:
-        result = subprocess.run(["ls", *options], stdout=subprocess.PIPE).stdout.decode("utf-8")
-        for o in options:   # check for flags to decide how to clean output
-            if "-" in o:
-                args = o
-                break
-            else:
-                args = False
-    except:
-        result = subprocess.run(["ls"], stdout=subprocess.PIPE).stdout.decode("utf-8")
-        args = False
-    """
     ## add false info for directory (create if none in cache)
     os.chdir("/home/jail/cache")
     # check to see if target directory is in the cache
@@ -438,21 +425,7 @@ def honeypotMain():
             f.write(message + "\n")
         f.close
         os.chdir(CURRENT_DIR)
-        """
-        try:
-            args = list(userInput.split()[1:])
-            bashExec = bashInterface[bashCommand](args)
-            os.chdir("/home/jail/log")
-            message = "    " + prompt + userInput
-            with open(USER+".jail.log","a+") as f:
-                f.write(message + "\n")
-            f.close
-            os.chdir(CURRENT_DIR)
-            #print("args")
-        except:
-            bashExec = bashInterface[bashCommand]()
-            #print("noargs")
-        """
+
     return
 
 # honeypot caller function
@@ -534,10 +507,9 @@ def main():
      |  '-'  / |  | |  | |  |   |     |  \       /|  | |  | |  `---.|     |  |     |
       `-----'  `--' `--' `--'   `-----'   `-----' `--' `--' `------'`-----'  `-----'
           """)
-    print("Use command 'help' to get a list of available commands")
-    print()
+    print("Use command 'help' to get a list of available commands\n")
     while True:
-        command = input(USER+"@"+HOSTNAME+":~$ ")
+        command = input("jailshell:~ > ")
         commandInterface[command]()
 
 
