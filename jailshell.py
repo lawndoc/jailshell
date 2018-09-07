@@ -39,17 +39,19 @@ import getpass
 import bcrypt
 import hashlib
 import random
-from pyparsing import *
+# from pyparsing import *
 
-REMOTE_ADDR = os.getenv("SSH_CLIENT","IP_not_found").split(" ")[0]
-USER = os.getenv("USER","root")
+REMOTE_ADDR = os.getenv("SSH_CLIENT", "IP_not_found").split(" ")[0]
+USER = os.getenv("USER", "root")
 CURRENT_DIR = "/home/%s" % USER if USER != "root" else "/root"
-HOSTNAME = subprocess.run(["hostname"],stdout=subprocess.PIPE).stdout.decode("utf-8")[:-1]
+HOSTNAME = subprocess.run(["hostname"], stdout=subprocess.PIPE).stdout.decode("utf-8")[:-1]
+
 
 class colors:
     DIR = "\033[38;5;12m"
     EXE = "\033[38;5;10m"
     ENDC = "\033[0m"
+
 
 """---------------------------------------------------------------------
 Default command dictionary:
@@ -57,7 +59,7 @@ Default command dictionary:
     - do not add new definitions to this space
 ---------------------------------------------------------------------"""
 
-COMMAND_DEFINITIONS = {"help":"Get a list of available commands","bash":"Use sudoer credentials to return to bash","exit":"Log out"}
+COMMAND_DEFINITIONS = {"help": "Get a list of available commands", "bash": "Use sudoer credentials to return to bash", "exit": "Log out"}
 
 """---------------------------------------------------------------------
 Add to COMMAND_DEFININTIONS:
@@ -75,6 +77,7 @@ Default jailshell command functions:
 
 # default jail command functions
 
+
 def gethelp():
     print()
     for cmd, descr in COMMAND_DEFINITIONS.items():
@@ -82,15 +85,17 @@ def gethelp():
     print()
     return
 
+
 def invalid():
     print("\nCommand not recognized.\n")
     return
+
 
 def testFunction():
     test1 = getpass.getpass("").encode('utf-8')
     test2 = getpass.getpass("").encode('utf-8')
     os.chdir("/home/jail")
-    with open("jail.shadow","r") as f:
+    with open("jail.shadow", "r") as f:
         for line in f:
             if test1 in line:
                 test3, test4 = line.split()
@@ -101,24 +106,25 @@ def testFunction():
 
 # honeypot helper functions
 
-def genCache(command, target, args = None):
+
+def genCache(command, target, args=None):
     # helper function for ls cache generation
-    def genPerms(ext = "dir"):
-        permOps = ["rwxrwxrwx","rwxrwxr-x","rwxr-xr-x","rw-rw-rw-","rw-rw-r--"]
+    def genPerms(ext="dir"):
+        permOps = ["rwxrwxrwx", "rwxrwxr-x", "rwxr-xr-x", "rw-rw-rw-", "rw-rw-r--"]
         if ext == "dir":
-            return permOps[random.randint(0,1)]
-        elif ext == any(x for x in [".py",".sh",".script",".bash"]):
-            return permOps[random.randint(1,2)]
+            return permOps[random.randint(0, 1)]
+        elif ext == any(x for x in [".py", ".sh", ".script", ".bash"]):
+            return permOps[random.randint(1, 2)]
         else:
-            return permOps[random.randint(3,4)]
+            return permOps[random.randint(3, 4)]
     # generate cache for ls command
     if command == "ls":
         os.chdir("/home/jail")
-        with open("wordlist.txt","r") as f:
+        with open("wordlist.txt", "r") as f:
             wordList = f.read().split()
         f.close()
         cache = ""
-        result = subprocess.run(["ls","-al",target],stdout=subprocess.PIPE).stdout.decode("utf-8")
+        result = subprocess.run(["ls", "-al", target], stdout=subprocess.PIPE).stdout.decode("utf-8")
         count = 0
         for item in result.split("\n"):
             if len(item) == 0:
@@ -139,10 +145,10 @@ def genCache(command, target, args = None):
             else:
                 perms = "-" + genPerms(ext)
             if not isDir:
-                size = str(random.randint(20,20000))
-            day = str(int(day)-random.randint(1,4) if int(day) > 5 else int(day)+random.randint(1,4))
-            time = str(random.randint(7,20))+":"+str(random.randint(0,5))+str(random.randint(0,9))
-            name = wordList[random.randint(0,len(wordList)-1)] + ext
+                size = str(random.randint(20, 20000))
+            day = str(int(day) - random.randint(1, 4) if int(day) > 5 else int(day) + random.randint(1, 4))
+            time = str(random.randint(7, 20)) + ":" + str(random.randint(0, 5)) + str(random.randint(0, 9))
+            name = wordList[random.randint(0, len(wordList) - 1)] + ext
             line = " ".join([perms, links, user, group, size, month, day, time, name]) + "\n"
             cache += line
         # sort cache
@@ -163,7 +169,7 @@ def genCache(command, target, args = None):
             sorter.append([])
             sorter[count] = line.split()
             count += 1
-        sorter = sorted(sorter, key=lambda x:(x[8][0].lower() if x[8][0] != "." and x[8] != "." else x[8][1].lower()))
+        sorter = sorted(sorter, key=lambda x: (x[8][0].lower() if x[8][0] != "." and x[8] != "." else x[8][1].lower()))
         cache = first + "\n"
         for line in tooShort:
             cache += line + "\n"
@@ -172,13 +178,14 @@ def genCache(command, target, args = None):
         # append to ls_cache and create new key cache
         os.chdir("/home/jail/cache")
         targetHash = hashlib.md5(target.encode()).hexdigest()
-        with open("ls_cache","a+") as f:
-            f.write(target +" "+ targetHash +"\n")
-        with open(targetHash,"w+") as f:
+        with open("ls_cache", "a+") as f:
+            f.write(target + " " + targetHash + "\n")
+        with open(targetHash, "w+") as f:
             f.write(cache)
         os.chmod(targetHash, 0o666)
     # done generating cache, return for immediate use with command
     return cache
+
 
 def printCache(command, result, args):
     if command == "ls":
@@ -208,14 +215,14 @@ def printCache(command, result, args):
                     # skip line if hidden item and no -a flag
                     if not args and line.split()[8][0] == ".":
                             continue
-                    if count%numColumns == 0:
+                    if count % numColumns == 0:
                         rows[r].append(" ".join(line.split()[8:]))
                         fullRows[r].append(line.split())
                         # check if item name has a space
-                        if len(fullRows[r][count%numColumns-1][8:]) > 1:
-                            fullRows[r][count%numColumns-1][8] = " ".join(fullRows[r][count%numColumns-1][8:])
-                            for i in range(len(list(fullRows[r][count%numColumns-1][9:]))):
-                                fullRows[r][count%numColumns-1].pop()
+                        if len(fullRows[r][count % numColumns - 1][8:]) > 1:
+                            fullRows[r][count % numColumns - 1][8] = " ".join(fullRows[r][count % numColumns - 1][8:])
+                            for i in range(len(list(fullRows[r][count % numColumns - 1][9:]))):
+                                fullRows[r][count % numColumns - 1].pop()
                         rows.append([])
                         fullRows.append([])
                         r += 1
@@ -223,10 +230,10 @@ def printCache(command, result, args):
                         rows[r].append(" ".join(line.split()[8:]))
                         fullRows[r].append(line.split())
                         # check if item name has a space
-                        if len(fullRows[r][count%numColumns-1][8:]) > 1:
-                            fullRows[r][count%numColumns-1][8] = " ".join(fullRows[r][count%numColumns-1][8:])
-                            for i in range(len(list(fullRows[r][count%numColumns-1][9:]))):
-                                fullRows[r][count%numColumns-1].pop()
+                        if len(fullRows[r][count % numColumns - 1][8:]) > 1:
+                            fullRows[r][count % numColumns - 1][8] = " ".join(fullRows[r][count % numColumns - 1][8:])
+                            for i in range(len(list(fullRows[r][count % numColumns - 1][9:]))):
+                                fullRows[r][count % numColumns - 1].pop()
                     count += 1
                     # I'm sure that was fun to read :)
 
@@ -241,13 +248,13 @@ def printCache(command, result, args):
                         reorderFull[i].append([])
                 reorR = 0
                 reorC = 0
-                for r, f in zip(rows,fullRows):
+                for r, f in zip(rows, fullRows):
                     for c, a in zip(r, f):
                         try:
                             reorderRows[reorR][reorC] = c
                             reorderFull[reorR][reorC] = a
                         except:
-                            reorC+= 1
+                            reorC += 1
                             reorR = 0
                             reorderRows[reorR][reorC] = c
                             reorderFull[reorR][reorC] = a
@@ -269,17 +276,17 @@ def printCache(command, result, args):
                 fits = True
 
                 # add colors and print
-                for r, infoList in zip(rows,fullRows):
+                for r, infoList in zip(rows, fullRows):
                     line = "  ".join(thing.ljust(width) for thing, width in zip(r, widths))
                     for item, attr in zip(r, infoList):
                         if attr[0][0] == "d":
-                            line = line[:line.find(item)] + colors.DIR + item + colors.ENDC + line[line.find(item)+len(item):]
+                            line = line[:line.find(item)] + colors.DIR + item + colors.ENDC + line[line.find(item) + len(item):]
                         elif "x" in attr[0]:
-                            line = line[:line.find(item)] + colors.EXE + item + colors.ENDC + line[line.find(item)+len(item):]
+                            line = line[:line.find(item)] + colors.EXE + item + colors.ENDC + line[line.find(item) + len(item):]
                     print(line)
 
         # for flags "-l" and "-al"
-        elif all(x in args for x in ["-","l"]):
+        elif all(x in args for x in ["-", "l"]):
             r = 0
             rows = [[]]
             # build 2 dimentional list[row][col]
@@ -302,7 +309,7 @@ def printCache(command, result, args):
             for r in rows:
                 if len(r[8:]) > 1:
                     r[8] = " ".join(r[8:])
-                    for i in range(len(r)-(len(r)-len(r[9:]))):
+                    for i in range(len(r) - (len(r) - len(r[9:]))):
                         r.pop()
             # extend rows with less columns and set max width for each column
             maxRowLen = len(max(rows, key=len))
@@ -321,18 +328,20 @@ def printCache(command, result, args):
                     continue
                 line = " ".join(item.ljust(width) for item, width in zip(r, widths))
                 if r[0][0] == "d":
-                    line = line[:line.find(r[8])] + colors.DIR + r[8] + colors.ENDC + line[line.find(r[8])+len(r[8]):]
+                    line = line[:line.find(r[8])] + colors.DIR + r[8] + colors.ENDC + line[line.find(r[8]) + len(r[8]):]
                 elif "x" in r[0]:
-                    line = line[:line.find(r[8])] + colors.EXE + r[8] + colors.ENDC + line[line.find(r[8])+len(r[8]):]
+                    line = line[:line.find(r[8])] + colors.EXE + r[8] + colors.ENDC + line[line.find(r[8]) + len(r[8]):]
                 if len(r) > 1:
                     print(line)
         else:
-            args = args.replace("-","")
-            args = args.replace("l","")
-            args = args.replace("a","")
+            args = args.replace("-", "")
+            args = args.replace("l", "")
+            args = args.replace("a", "")
             print("ls: invalid option%s -- '" % ("s" if len(args) > 1 else "") + args + "'\n")
 
+
 # honeypot emulated bash functions
+
 
 def ls(options=None):
     # try calling with options, otherwise run without options
@@ -347,40 +356,41 @@ def ls(options=None):
             target = CURRENT_DIR[:CURRENT_DIR.rindex("/")]
         elif o != ".":
             target = o
-    ## add false info for directory (create if none in cache)
+    # add false info for directory (create if none in cache)
     os.chdir("/home/jail/cache")
     # check to see if target directory is in the cache
     cached = False
-    with open("ls_cache","r") as f:
+    with open("ls_cache", "r") as f:
         for line in f:
             if target in line:
                 key = line.split()[1]
                 cached = True
     # retrieve cached items if they exist
     if cached:
-        cache = open(key,"r")
+        cache = open(key, "r")
         result = cache.read()
         cache.close()
     # generate cached item if it doesn't already exist
     else:
-        result = genCache("ls",target,args)
+        result = genCache("ls", target, args)
     os.chdir(CURRENT_DIR)
 
     # format and print output
     print("!!!-" + str(args) + "-!!!")
-    result = printCache("ls",result,args)
+    result = printCache("ls", result, args)
     return
+
 
 def cd(options=[CURRENT_DIR]):
     global CURRENT_DIR
     if options[0] == "~":
-        toDir = "/home/"+os.getenv("USER","jail")
+        toDir = "/home/" + os.getenv("USER", "jail")
     elif options[0] == "..":
         toDir = CURRENT_DIR[:CURRENT_DIR.rfind("/")]
     elif options[0] == ".":
         toDir = CURRENT_DIR
     elif "/" not in options[0]:
-        toDir = CURRENT_DIR+"/"+options[0]
+        toDir = CURRENT_DIR + "/" + options[0]
     else:
         toDir = options[0]
     try:
@@ -390,53 +400,57 @@ def cd(options=[CURRENT_DIR]):
         print("-bash: cd: %s: No such directory" % (toDir if "/" in options[0] else options[0]))
     return
 
+
 def printWorkDir(options=None):
     print(CURRENT_DIR)
     return
+
 
 def clear(options=None):
     os.system("clear")
     return
 
+
 def ifconfig(options=None):
+    """Emulates the bash 'ifconfig' command."""
     result = subprocess.run(["ifconfig", "ERROR"], stdout=subprocess.PIPE).stdout.decode("utf-8")
     print(result)
     return
 
-# honeypot main function
+
 def honeypotMain():
-    bashInterface = defaultdict(lambda: invalid, {"exit":exit, "ls":ls, "cd":cd, "pwd":printWorkDir, "clear":clear, "ifconfig":ifconfig, "shutdown":exit})
+    """This function serves as the honeypot's main function. It gives the user
+    a prompt indistinguishable from a bash prompt, and then executes emulated
+    functions from this script."""
+    bashInterface = defaultdict(lambda: invalid, {"exit": exit, "ls": ls, "cd": cd, "pwd": printWorkDir, "clear": clear, "ifconfig": ifconfig, "shutdown": exit})
     while True:
         promptDir = CURRENT_DIR if CURRENT_DIR != "/home/%s" % USER and not (CURRENT_DIR == "/root" and USER == "root") else "~"
-        prompt = USER+"@"+HOSTNAME+":"+promptDir+("$ " if USER != "root" else "# ")
+        prompt = USER + "@" + HOSTNAME + ":" + promptDir + ("$ " if USER != "root" else "# ")
         userInput = input(prompt)
-        #print(userInput)
         if userInput == "":
             continue
         bashCommand = userInput.split()[0]
-        #args = list(userInput.split()[1:])
-        #print(args)
-        #bashExec = bashInterface[bashCommand](args)
         args = list(userInput.split()[1:])
-        bashExec = bashInterface[bashCommand](args)
+        # call function corresponding to command
+        bashInterface[bashCommand](args)
         os.chdir("/home/jail/log")
         message = "    " + prompt + userInput
-        with open(USER+".jail.log","a+") as f:
+        with open(USER + ".jail.log", "a+") as f:
             f.write(message + "\n")
         f.close
         os.chdir(CURRENT_DIR)
-
     return
 
-# honeypot caller function
+
 def honeypot():
+    """honeypot caller function"""
     print("\nEnter credentials to return to bash")
     username = input("Username: ")
     password = getpass.getpass()
     print("...")
     time.sleep(1)
     os.chdir("/home/jail")
-    with open("jail.shadow","r") as f:
+    with open("jail.shadow", "r") as f:
         for line in f:
             if username in line:
                 uname, pwhash = line.split()
@@ -445,8 +459,8 @@ def honeypot():
     if bcrypt.checkpw(password.encode('utf-8'), pwhash.encode('utf-8')):
         print("\nEntering bash...\n")
         os.chdir("/home/jail/log")
-        message = str(datetime.now())+" IP: "+REMOTE_ADDR+" SUCCESS -- Username: "+username+" Password: "+password+"\n"
-        with open(USER+".jail.log","a+") as f:
+        message = str(datetime.now()) + " IP: " + REMOTE_ADDR + " SUCCESS -- Username: " + username + " Password: " + password + "\n"
+        with open(USER + ".jail.log", "a+") as f:
             f.write(message)
         f.close()
         os.chdir(CURRENT_DIR)
@@ -454,12 +468,13 @@ def honeypot():
     else:
         print("\nIncorrect credentials. Reporting...\n")
         os.chdir("/home/jail/log")
-        message = str(datetime.now())+" IP: "+REMOTE_ADDR+"FAILURE -- Username: "+username+" Password: "+password+"\n"
-        with open(USER+".jail.log","a+") as f:
+        message = str(datetime.now()) + " IP: " + REMOTE_ADDR + "FAILURE -- Username: " + username + " Password: " + password + "\n"
+        with open(USER + ".jail.log", "a+") as f:
             f.write(message)
         f.close()
         os.chdir(CURRENT_DIR)
     return
+
 
 """-----------------------------------------------------------------------
 Add custom command functions to execute scripts below...
@@ -471,11 +486,11 @@ Follow these rules:
     4) add return statement to the function (should be null, can be anything, just NOT 'invalid')
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"""
 
-#def restartFooProgram():
-#    os.chdir("/home/fooname/Scripts")
-#    subprocess.call(["./restartFoo.sh"])
-#    os.chdir("/home/jail")
-#    return
+# def restartFooProgram():
+#     os.chdir("/home/fooname/Scripts")
+#     subprocess.call(["./restartFoo.sh"])
+#     os.chdir("/home/jail")
+#     return
 
 
 """-----------------------------------------------------------------------
@@ -483,9 +498,10 @@ Follow these rules:
     - only modify in specified area
 -----------------------------------------------------------------------"""
 
+
 def main():
     # default command interface...
-    commandInterface = defaultdict(lambda: invalid, {"help":gethelp, "bash":honeypot, "exit":exit})
+    commandInterface = defaultdict(lambda: invalid, {"help": gethelp, "bash": honeypot, "exit": exit})
 
     """-------------------------------------------------------------------
     Add to commandInterface:
@@ -513,7 +529,5 @@ def main():
         commandInterface[command]()
 
 
-
 # call to start script
 main()
-
