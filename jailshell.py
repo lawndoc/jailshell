@@ -48,6 +48,8 @@ HOSTNAME = subprocess.run(["hostname"], stdout=subprocess.PIPE).stdout.decode("u
 
 
 class colors:
+    """Escape codes for shell colors."""
+
     DIR = "\033[38;5;12m"
     EXE = "\033[38;5;10m"
     ENDC = "\033[0m"
@@ -79,6 +81,7 @@ Default jailshell command functions:
 
 
 def gethelp():
+    """Display information about each jailshell command."""
     print()
     for cmd, descr in COMMAND_DEFINITIONS.items():
         print(cmd, " : ", descr)
@@ -87,11 +90,13 @@ def gethelp():
 
 
 def invalid():
+    """Print error message when user enters unknown command."""
     print("\nCommand not recognized.\n")
     return
 
 
 def testFunction():
+    """Test function."""
     test1 = getpass.getpass("").encode('utf-8')
     test2 = getpass.getpass("").encode('utf-8')
     os.chdir("/home/jail")
@@ -108,6 +113,7 @@ def testFunction():
 
 
 def genCache(command, target, args=None):
+    """Generate a cache of the output for the 'ls' command."""
     # helper function for ls cache generation
     def genPerms(ext="dir"):
         permOps = ["rwxrwxrwx", "rwxrwxr-x", "rwxr-xr-x", "rw-rw-rw-", "rw-rw-r--"]
@@ -188,6 +194,7 @@ def genCache(command, target, args=None):
 
 
 def printCache(command, result, args):
+    """Parse and print cached output for 'ls' command."""
     if command == "ls":
         # for no flags and for "-a" flag
         if not args or args == "-a":
@@ -344,6 +351,7 @@ def printCache(command, result, args):
 
 
 def ls(options=None):
+    """Emulate the bash 'ls' command, and adds false output."""
     # try calling with options, otherwise run without options
     result = subprocess.run(["ls", *options], stdout=subprocess.PIPE).stdout.decode("utf-8")
     args = False
@@ -382,6 +390,7 @@ def ls(options=None):
 
 
 def cd(options=[CURRENT_DIR]):
+    """Emulate the bash 'cd' command."""
     global CURRENT_DIR
     if options[0] == "~":
         toDir = "/home/" + os.getenv("USER", "jail")
@@ -402,26 +411,26 @@ def cd(options=[CURRENT_DIR]):
 
 
 def printWorkDir(options=None):
+    """Emulate the bash 'pwd' command."""
     print(CURRENT_DIR)
     return
 
 
 def clear(options=None):
+    """Emulate the bash 'clear' command."""
     os.system("clear")
     return
 
 
 def ifconfig(options=None):
-    """Emulates the bash 'ifconfig' command."""
+    """Emulate the bash 'ifconfig' command."""
     result = subprocess.run(["ifconfig", "ERROR"], stdout=subprocess.PIPE).stdout.decode("utf-8")
     print(result)
     return
 
 
 def honeypotMain():
-    """This function serves as the honeypot's main function. It gives the user
-    a prompt indistinguishable from a bash prompt, and then executes emulated
-    functions from this script."""
+    """Emulate bash prompt."""
     bashInterface = defaultdict(lambda: invalid, {"exit": exit, "ls": ls, "cd": cd, "pwd": printWorkDir, "clear": clear, "ifconfig": ifconfig, "shutdown": exit})
     while True:
         promptDir = CURRENT_DIR if CURRENT_DIR != "/home/%s" % USER and not (CURRENT_DIR == "/root" and USER == "root") else "~"
@@ -443,7 +452,7 @@ def honeypotMain():
 
 
 def honeypot():
-    """honeypot caller function"""
+    """Call honeypot main function."""
     print("\nEnter credentials to return to bash")
     username = input("Username: ")
     password = getpass.getpass()
@@ -500,6 +509,7 @@ Follow these rules:
 
 
 def main():
+    """Display jailshell prompt and execute functions on input."""
     # default command interface...
     commandInterface = defaultdict(lambda: invalid, {"help": gethelp, "bash": honeypot, "exit": exit})
 
