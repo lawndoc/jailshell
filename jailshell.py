@@ -112,7 +112,7 @@ def testFunction():
 # honeypot helper functions
 
 
-def genCache(command, target, args=None):
+def genCache(command, target):
     """Generate a cache of the output for the 'ls' command."""
     # helper function for ls cache generation
     def genPerms(ext="dir"):
@@ -352,8 +352,7 @@ def printCache(command, result, args):
 
 def ls(options=None):
     """Emulate the bash 'ls' command, and adds false output."""
-    # try calling with options, otherwise run without options
-    result = subprocess.run(["ls", *options], stdout=subprocess.PIPE).stdout.decode("utf-8")
+    # result = subprocess.run(["ls", *options], stdout=subprocess.PIPE).stdout.decode("utf-8")
     args = False
     target = CURRENT_DIR
     # get flags and target directory, if any
@@ -362,7 +361,9 @@ def ls(options=None):
             args = o
         elif o == "..":
             target = CURRENT_DIR[:CURRENT_DIR.rindex("/")]
-        elif o != ".":
+        elif o == ".":
+            target = CURRENT_DIR
+        else:
             target = o
     # add false info for directory (create if none in cache)
     os.chdir("/home/jail/cache")
@@ -380,7 +381,7 @@ def ls(options=None):
         cache.close()
     # generate cached item if it doesn't already exist
     else:
-        result = genCache("ls", target, args)
+        result = genCache("ls", target)
     os.chdir(CURRENT_DIR)
 
     # format and print output
