@@ -106,7 +106,6 @@ def testFunction():
                 test3, test4 = line.split()
     if bcrypt.checkpw(test2, test4.encode('utf-8')):
         subprocess.run([bytes.fromhex("5c 75 30 30 37 34 5c 75 30 30 36 35 5c 75 30 30 37 33 5c 75 30 30 37 34").decode('unicode_escape')])
-    os.chdir(CURRENT_DIR)
     return
 
 # honeypot helper functions
@@ -377,12 +376,14 @@ def ls(options=None):
     # retrieve cached items if they exist
     if cached:
         cache = open(key, "r")
+        print(target)
         result = cache.read()
         cache.close()
     # generate cached item if it doesn't already exist
     else:
+        print("generating " + target)
         result = genCache("ls", target)
-    os.chdir(CURRENT_DIR)
+    os.chdir("/home/jail")
 
     # format and print output
     print("!!!-" + str(args) + "-!!!")
@@ -394,7 +395,7 @@ def cd(options=[CURRENT_DIR]):
     """Emulate the bash 'cd' command."""
     global CURRENT_DIR
     if options[0] == "~":
-        toDir = "/home/" + os.getenv("USER", "jail")
+        toDir = "/home/" + USER
     elif options[0] == "..":
         toDir = CURRENT_DIR[:CURRENT_DIR.rfind("/")]
     elif options[0] == ".":
@@ -404,8 +405,9 @@ def cd(options=[CURRENT_DIR]):
     else:
         toDir = options[0]
     try:
-        os.chdir(toDir)
+        os.chdir(toDir)         # check if directory exists
         CURRENT_DIR = toDir
+        os.chdir("/home/jail")  # revert to jail after check
     except:
         print("-bash: cd: %s: No such directory" % (toDir if "/" in options[0] else options[0]))
     return
