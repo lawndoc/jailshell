@@ -370,9 +370,10 @@ def ls(options=None):
     cached = False
     with open("ls_cache", "r") as f:
         for line in f:
-            if target in line:
-                key = line.split()[1]
-                cached = True
+            for dir in line.split():
+                if target == dir[1]:
+                    key = line.split()[1]
+                    cached = True
     # retrieve cached items if they exist
     if cached:
         cache = open(key, "r")
