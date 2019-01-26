@@ -26,22 +26,27 @@ below) that is entered by the malicious user is also logged. See honeypot emulat
 bash commands for info on the commands available and to see the rest of the security 
 features implemented with them.
 
+The full repository in GitHub is not meant to be the environment that jailshell is
+used. Instead, the environment needs to be set up separate from where the files are
+downloaded. There is a script automating most of this process in the setup guide
+below.
+
 Instructions to set up and start using this shell are below:
 
 
 SETUP GUIDE:
-	1) $ sudo ./setup.sh
+	1) $ sudo ./setup.sh		## (see below for info on script)
 	2) change desired user(s) startup script from /bin/bash to /home/jail/jailshell.py 
 		in the file /etc/passwd
-	3) make sure to add correct username and password to jail.shadow by executing 
-		newuser.py in the /home/jail directory
+	3) make sure to add the username and password to jail.shadow by executing 
+		newuser.py which is now in the /home/jail directory
 	4) add custom commands using the guide at the top of jailshell.py to execute your
 		scripts from jailshell
 
 
 The setup script creates a jailed environment /home/jail that is only writeable by root, 
 as well as a directory for logs that will record honeypot access. It also moves all
-configuration files (including the jailshell script) to /home/jail.
+necessary files (including the jailshell script) to /home/jail.
 
 Default Jailshell Commands:
 	- help: Gets a list of available commands and their definitions.
@@ -54,11 +59,12 @@ Default Jailshell Commands:
 		the connection if it is a remote login.
 
 Honeypot -- Emulated Bash Commands:
-	- ls (real/fake)
-	- cd (real)
-	- pwd (real)
-	- clear (real)
-	- ifconfig (real)
+	- ls		: displays the contents of a directory exactly like bash, but
+				also includes fake contents that aren't actually there
+	- cd		: changes the "current directory" variable in the script
+	- pwd		: emulates bash command exactly
+	- clear 	: emulates bash command exactly
+	- ifconfig	: emulates bash command exactly
 
 Honeypot Commands in Future Updates:
 	- cat (real/fake) :: cached false info from fake (??and real??) files

@@ -370,16 +370,18 @@ def ls(options=None):
     cached = False
     with open("ls_cache", "r") as f:
         for line in f:
-            for dir in line.split():
-                if target == dir[1]:
-                    key = line.split()[1]
-                    cached = True
+            # each line looks like /path/to/folder h@shT3st
+            folder, hashed = line.split(" ")
+            # remove newline character
+            hashed = hashed[:-1]
+            if target == folder:
+                key = hashed
+                cached = True
+                break
     # retrieve cached items if they exist
     if cached:
-        cache = open(key, "r")
-        print(target)
-        result = cache.read()
-        cache.close()
+        with open(key, "r") as cache:
+            result = cache.read()
     # generate cached item if it doesn't already exist
     else:
         print("generating " + target)
@@ -387,7 +389,7 @@ def ls(options=None):
     os.chdir("/home/jail")
 
     # format and print output
-    print("!!!-" + str(args) + "-!!!")
+    # print("!!!-" + str(args) + "-!!!")
     result = printCache("ls", result, args)
     return
 
