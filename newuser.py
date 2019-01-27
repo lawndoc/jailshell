@@ -28,7 +28,7 @@ def main():
                   use [-l <list.txt>] flag to specify a user list.")
     if flags and valid:
         with open(argv[2], "r") as accounts:
-            for account in account:
+            for account in accounts:
                 username, password = account.split(" ")
                 hashed = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
                 with open("jail.shadow", "a+") as shadow:
