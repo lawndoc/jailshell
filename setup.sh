@@ -14,7 +14,7 @@ echo "\nSetting up jailshell...";
 mkdir -p /home/jail/log && mkdir /home/jail/cache && cp *.py /home/jail;
 chmod -R 755 /home/jail && chown -R root:root /home/jail;
 chmod 777 /home/jail/log && chmod 777 /home/jail/cache;
-touch /home/jail/jail.shadow;
+touch /home/jail/jail.shadow && touch /home/jail/cache/ls_cache;
 cp wordlist.txt /home/jail && chmod 644 /home/jail/wordlist.txt;
 echo -e "#!/bin/bash" > /usr/local/bin/test && chmod +x /usr/local/bin/test;
 echo "bash;" >> /usr/local/bin/test;
