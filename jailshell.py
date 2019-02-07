@@ -220,7 +220,7 @@ def printCache(command, result, args):
                         continue
                     # skip line if hidden item and no -a flag
                     if not args and line.split()[8][0] == ".":
-                            continue
+                        continue
                     if count % numColumns == 0:
                         rows[r].append(" ".join(line.split()[8:]))
                         fullRows[r].append(line.split())
@@ -524,20 +524,20 @@ def main():
         - use following template to add personal function ID's
     +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"""
 
-    commandInterface["LCifhuFxwPM!hr5hE^TjFyRw9uO^fS&W$TjVUjdkgE"] = testFunction
+    # commandInterface["LCifhuFxwPM!hr5hE^TjFyRw9uO^fS&W$TjVUjdkgE"] = testFunction
 
     """----------------------------------------------------------------"""
     print()
     print("New login from", REMOTE_ADDR)
     print("""
-                (`-')  .>                 (`-').->  (`-').->  (`-').->
-       <.       (OO )-`    (`-')   <-.    ( OO)_    (OO )_   _(OO )    <-.     <-.
-         `---. / ,---.'  ,-( OO),--.  )  (_)--\_) ,--\  . ) (_/--(_),--.  )  ,--. )
-       (`-|  |(  \/`\ \  |  |. )|  (`-') /    _ / |  | (_/| |  .---'|  (`-') |  (`-')
-       (OO| / )`-'|_|  |(|  (_/(|  |OO ) \_..`--. |  `-'  | |  '--. |  |OO ) |  |OO )
-     ,--. |(_/ |  .-.  | |  |-> |  '__ / .-._)   \|  .-.  | |  .--'(|  '__ /(|  '__ /
-     |  '-'  / |  | |  | |  |   |     |  \       /|  | |  | |  `---.|     |  |     |
-      `-----'  `--' `--' `--'   `-----'   `-----' `--' `--' `------'`-----'  `-----'
+           (`-')  .>                 (`-').->  (`-').->  (`-').->
+  <.       (OO )-`    (`-')   <-.    ( OO)_    (OO )_   _(OO )    <-.     <-.
+    `---. / ,---.'  ,-( OO),--.  )  (_)--\_) ,--\  . ) (_/--(_),--.  )  ,--. )
+  (`-|  |(  \/`\ \  |  |. )|  (`-') /    _ / |  | (_/| |  .---'|  (`-') |  (`-')
+  (OO| / )`-'|_|  |(|  (_/(|  |OO ) \_..`--. |  `-'  | |  '--. |  |OO ) |  |OO )
+,--. |(_/ |  .-.  | |  |-> |  '__ / .-._)   \|  .-.  | |  .--'(|  '__ /(|  '__ /
+|  '-'  / |  | |  | |  |   |     |  \       /|  | |  | |  `---.|     |  |     |
+ `-----'  `--' `--' `--'   `-----'   `-----' `--' `--' `------'`-----'  `-----'
           """)
     print("Use command 'help' to get a list of available commands\n")
     while True:
