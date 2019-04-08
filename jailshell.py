@@ -140,7 +140,7 @@ def genCache(command, target):
                 continue
             cache += item + "\n"
             perms, links, user, group, size, month, day, time, *names = item.split()
-            name = " ".join(names)
+            name = " ".join(names) 
             ext = ""
             if "." in name and name[0] != ".":
                 ext = name[name.rindex("."):]
